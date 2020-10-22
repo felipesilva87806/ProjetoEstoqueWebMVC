@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.UI.MobileControls;
+using System.Windows.Documents;
 
 namespace ControleEstoque.Web.Controllers
 {
@@ -20,28 +22,22 @@ namespace ControleEstoque.Web.Controllers
         [Authorize]
         public ActionResult GrupoProduto()
         {
-            return View(_listaGrupoProduto);
+            return View(GrupoProdutoModel.RecuperLista());
         }
 
         [HttpPost]
         [Authorize]
         public ActionResult RecuperarGrupoProduto(int id)
         {
-            return Json(_listaGrupoProduto.Find(x => x.Id == id));
+            return Json(GrupoProdutoModel.RecuperarPeloId(id));
         }
 
         [HttpPost]
         [Authorize]
         public ActionResult ExcluirGrupoProduto(int id)
         {
-            var ret = false;
-            var registroBD = _listaGrupoProduto.Find(x => x.Id == id);
-            if (registroBD != null)
-            {
-                _listaGrupoProduto.Remove(registroBD);
-                ret = true;
-            }
-            return Json(ret);
+            
+            return Json(GrupoProdutoModel.ExcluirPeloId(id));
         }
 
         [HttpPost]
@@ -61,31 +57,25 @@ namespace ControleEstoque.Web.Controllers
             {
                 try
                 {
-                    var registroBD = _listaGrupoProduto.Find(x => x.Id == model.Id);
-                    if (registroBD == null)
+                    var id = model.Salvar();
+                    if (id > 0)
                     {
-                        registroBD = model;
-                        registroBD.Id = _listaGrupoProduto.Max(x => x.Id) + 1;
-                        _listaGrupoProduto.Add(registroBD);
+                        idSalvo = id.ToString();
                     }
                     else
                     {
-                        registroBD.Nome = model.Nome;
-                        registroBD.Ativo = model.Ativo;
+                        resultado = "ERRO";
                     }
+                    
                 }
                 catch (Exception ex)
                 {
-                    resultado = "ERRO";
+                    resultado = "AVISO";                    
                 }
                 
             }
             return Json(new { Resultado = resultado, Mensagens = mensagens, IdSalvo = idSalvo });
         }
-
-
-
-
 
         [Authorize]
         public ActionResult MarcaProduto()

@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -16,8 +17,8 @@ namespace ControleEstoque.Web.Models
             {
                 MySqlDataReader dr;
                 bool ret = false;
-                //string de conexao
-                conexao.ConnectionString = "server=localhost; port=3306; user id=root; database=db_estoque; password=";
+                //string de conexao que está dentro do arquivo Web.config
+                conexao.ConnectionString = ConfigurationManager.ConnectionStrings["principal"].ConnectionString;
                 if (conexao.State == System.Data.ConnectionState.Closed)
                 {
                     conexao.Open();
