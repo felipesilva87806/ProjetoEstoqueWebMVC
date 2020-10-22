@@ -89,9 +89,8 @@ namespace ControleEstoque.Web.Models
                     try
                     {
                         comando.Connection = conexao;
-                        //comando executado no banco
-                        comando.CommandText = string.Format(
-                            "SELECT * FROM grupo_produto WHERE (id = {0})", id);
+                        comando.CommandText = "SELECT * FROM grupo_produto WHERE id = @id";
+                        comando.Parameters.Add("@id", MySqlDbType.Int32).Value = id;
                         var reader = comando.ExecuteReader();
                         if (reader.Read())
                         {
@@ -139,9 +138,8 @@ namespace ControleEstoque.Web.Models
                         try
                         {
                             comando.Connection = conexao;
-                            //comando executado no banco
-                            comando.CommandText = string.Format(
-                                "DELETE FROM grupo_produto WHERE (id = {0})", id);
+                            comando.CommandText = "DELETE FROM grupo_produto WHERE id = @id";
+                            comando.Parameters.Add("@id", MySqlDbType.Int32).Value = id;
                             ret = (comando.ExecuteNonQuery() > 0);
 
                         }
@@ -185,8 +183,10 @@ namespace ControleEstoque.Web.Models
                         {
                             comando.Connection = conexao;
                             //comando executado no banco
-                            comando.CommandText = string.Format(
-                                "INSERT INTO grupo_produto (nome,ativo) VALUES ('{0}','{1}');", this.Nome, this.Ativo ? 1 : 0);
+                            comando.CommandText = "INSERT INTO grupo_produto (nome,ativo) VALUES (@nome,@ativo);";
+                            comando.Parameters.Add("@id", MySqlDbType.Int32).Value = this.Id;
+                            comando.Parameters.Add("@nome", MySqlDbType.VarChar).Value = this.Nome;
+                            comando.Parameters.Add("@ativo", MySqlDbType.Byte).Value = this.Ativo ? 1 : 0;
                             comando.ExecuteScalar();
                             comando.CommandText = "SELECT LAST_INSERT_ID();";
                             ret = Convert.ToInt32(comando.ExecuteScalar());
@@ -195,9 +195,10 @@ namespace ControleEstoque.Web.Models
                         {
                             comando.Connection = conexao;
                             //comando executado no banco
-                            comando.CommandText = string.Format(
-                                "UPDATE grupo_produto SET nome='{1}', ativo={2} WHERE id = '{0}'",
-                                this.Id, this.Nome, this.Ativo ? 1 : 0);
+                            comando.CommandText = "UPDATE grupo_produto SET nome=@nome, ativo=@ativo WHERE id = @id";
+                            comando.Parameters.Add("@id", MySqlDbType.Int32).Value = this.Id;
+                            comando.Parameters.Add("@nome", MySqlDbType.VarChar).Value = this.Nome;
+                            comando.Parameters.Add("@ativo", MySqlDbType.Byte).Value = this.Ativo ? 1 : 0;
                             if (comando.ExecuteNonQuery() > 0)
                             {
                                 ret = this.Id;
