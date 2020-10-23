@@ -27,11 +27,11 @@ namespace ControleEstoque.Web.Controllers
             }
 
             // vai ate o model e executa as classes passando como paramentro usuario e senha que veio no post da pagina
-            bool achou = UsuarioModel.ValidaUsuario(login.Usuario, login.Senha);               
+            var usuario = UsuarioModel.ValidaUsuario(login.Usuario, login.Senha);               
 
-            if (achou == true)
+            if (usuario != null)
             {
-                FormsAuthentication.SetAuthCookie(login.Usuario, login.LembrarMe);
+                FormsAuthentication.SetAuthCookie(usuario.Nome, login.LembrarMe);
                 if (Url.IsLocalUrl(returnUrl))
                 {
                     return Redirect(returnUrl);

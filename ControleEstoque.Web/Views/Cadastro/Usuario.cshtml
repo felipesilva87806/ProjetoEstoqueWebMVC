@@ -1,6 +1,6 @@
-﻿@model List<ControleEstoque.Web.Models.GrupoProdutoModel>
+﻿@model List<ControleEstoque.Web.Models.UsuarioModel>
 @{
-    ViewBag.Title = "Cadastro de Grupo de Produtos";
+    ViewBag.Title = "Cadastro de Usuários";
 }
 <style>
     #grid_cadastro > thead > tr th:nth-child(2) {
@@ -44,7 +44,7 @@
                     <thead>
                         <tr>
                             <th>Nome</th>
-                            <th>Ativo</th>
+                            <th>Login</th>
                             <th>Ação</th>
                         </tr>
                     </thead>
@@ -53,7 +53,7 @@
                         {
                             <tr data-id="@item.Id">
                                 <td>@item.Nome</td>
-                                <td>@{var ativo = (item.Ativo ? "SIM" : "NÃO");}@ativo</td>
+                                <td>@item.Login</td>
                                 <td>
                                     <a class="btn btn-primary btn-alterar" role="button"><i class="glyphicon glyphicon-pencil"></i> Alterar</a>
                                     <a class="btn btn-danger btn-excluir" role="button"><i class="glyphicon glyphicon-trash"></i> Excluir</a>
@@ -70,7 +70,6 @@
 <div id="modal_cadastro" class="form-horizontal invisivel" role="dialog">
     <div id="msg_mensagem_aviso" class="text-danger invisivel"></div>
     <fieldset>
-        <!-- gera um token-->
         @Html.AntiForgeryToken()
         <div class="row">
             <div class="form-group">
@@ -80,9 +79,15 @@
                 </div>
             </div>
             <div class="form-group">
-                @Html.Label("cbx_ativo", "Ativo", new { @class = "col-md-3 control-label" })
+                @Html.Label("txt_login", "Login", new { @class = "col-md-3 control-label" })
                 <div>
-                    @Html.CheckBox("cbx_ativo")
+                    @Html.TextBox("txt_login", null, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("txt_senha", "Senha", new { @class = "col-md-3 control-label" })
+                <div>
+                    @Html.TextBox("txt_senha", null, new { @class = "form-control", type = "password" })
                 </div>
             </div>
         </div>
@@ -95,7 +100,6 @@
                     </div>
                     <div id="msg_aviso" class="alert alert-warning invisivel">Falta preencher os campos acima.</div>
                     <div id="msg_erro" class="alert alert-danger invisible">Ops! Deus ruim!</div>
-                    <div id="msg_alerta" class="alert alert-danger invisible">Ocorreu um erro!</div>
                 </div>
             </div>
         </div>
@@ -103,18 +107,15 @@
 </div>
 @section Scripts{
     <script>
-        //função que retorna um token de validação
         function add_anti_forgery_token(data) {
             data.__RequestVerificationToken = $('[name=__RequestVerificationToken]').val();
             return data;
         }
-
-
-
         function abrir_form(dados) {
             $('#id_cadastro').val(dados.Id);
             $('#txt_nome').val(dados.Nome);
-            $('#cbx_ativo').prop('checked', dados.Ativo);
+            $('#txt_login').val(dados.Login);
+            $('#txt_senha').val(dados.Senha);
             var modal_cadastro = $('#modal_cadastro');
             $('#msg_mensagem_aviso').empty();
             $('#msg_aviso').hide();
@@ -137,7 +138,7 @@
             var ret =
                 '<tr data-id=' + dados.Id + '>' +
                 '<td>' + dados.Nome + '</td>' +
-                '<td>' + (dados.Ativo ? 'SIM' : 'NÃO') + '</td>' +
+                '<td>' + dados.Login + '</td>' +
                 '<td>' +
                 '<a class="btn btn-primary btn-alterar" role="button" style="margin-right: 3px"><i class="glyphicon glyphicon-pencil"></i> Alterar</a>' +
                 '<a class="btn btn-danger btn-excluir" role="button"><i class="glyphicon glyphicon-trash"></i> Excluir</a>' +
@@ -146,15 +147,16 @@
             return ret;
         }
         $(document).on('click', '#btn_incluir', function () {
-            abrir_form({ Id: 0, Nome: '', Ativo: true });
+            abrir_form({ Id: 0, Nome: '', Login: '', Senha: '' });
         })
         .on('click', '.btn-alterar', function () {
             var btn = $(this),
                 id = btn.closest('tr').attr('data-id'),
-                url = '@Url.Action("RecuperarGrupoProduto", "Cadastro")',
+                url = '@Url.Action("RecuperarUsuario", "Cadastro")',
                 param = { 'id': id };
             $.post(url, add_anti_forgery_token(param), function (response) {
                 if (response) {
+                    response.Senha = '@ViewBag.SenhaPadrao';
                     abrir_form(response);
                 }
             });
@@ -163,18 +165,18 @@
             var btn = $(this),
                 tr = btn.closest('tr'),
                 id = tr.attr('data-id'),
-                url = '@Url.Action("ExcluirGrupoProduto", "Cadastro")',
+                url = '@Url.Action("ExcluirUsuario", "Cadastro")',
                 param = { 'id': id };
             bootbox.confirm({
-                message: "Realmente deseja excluir o grupo de produto?",
+                message: "Realmente deseja excluir o usuário?",
                 buttons: {
                     confirm: {
                         label: 'Sim',
-                        className: 'btn-success'
+                        className: 'btn-danger'
                     },
                     cancel: {
                         label: 'Não',
-                        className: 'btn-danger'
+                        className: 'btn-success'
                     }
                 },
                 callback: function (result) {
@@ -190,11 +192,12 @@
         })
         .on('click', '#btn_confirmar', function () {
             var btn = $(this),
-                url = '@Url.Action("SalvarGrupoProduto", "Cadastro")',
+                url = '@Url.Action("SalvarUsuario", "Cadastro")',
                 param = {
                     Id: $('#id_cadastro').val(),
                     Nome: $('#txt_nome').val(),
-                    Ativo: $('#cbx_ativo').prop('checked')
+                    Login: $('#txt_login').val(),
+                    Senha: $('#txt_senha').val()
                 };
             $.post(url, add_anti_forgery_token(param), function (response) {
                 if (response.Resultado == "OK") {
@@ -208,7 +211,7 @@
                         var linha = $('#grid_cadastro').find('tr[data-id=' + param.Id + ']').find('td');
                         linha
                             .eq(0).html(param.Nome).end()
-                            .eq(1).html(param.Ativo ? 'SIM' : 'NÃO');
+                            .eq(1).html(param.Login);
                     }
                     $('#modal_cadastro').parents('.bootbox').modal('hide');
                 }
